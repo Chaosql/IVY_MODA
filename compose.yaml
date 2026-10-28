@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: ivy_moda_demo
+      POSTGRES_USER: ivy_moda
+      POSTGRES_PASSWORD: ivy_moda_local_demo
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ivy_moda -d ivy_moda_demo"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      APP_URL: http://localhost:3000
+      SQL_HOST: db
+      SQL_PORT: "5432"
+      SQL_USER: ivy_moda
+      SQL_PASSWORD: ivy_moda_local_demo
+      SQL_DB_NAME: ivy_moda_demo
+      DATABASE_SSL: "false"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
